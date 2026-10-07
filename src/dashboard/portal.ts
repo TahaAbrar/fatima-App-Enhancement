@@ -124,6 +124,7 @@ export async function fetchPortalTransactions(
     sort?: HistorySort
     offset?: number
     limit?: number
+    accid?: number
   } = {},
   signal?: AbortSignal,
 ) {
@@ -134,6 +135,7 @@ export async function fetchPortalTransactions(
   if (params.sort) q.set('sort', params.sort)
   if (params.offset != null) q.set('offset', String(params.offset))
   if (params.limit != null) q.set('limit', String(params.limit))
+  if (params.accid != null) q.set('accid', String(params.accid))
   const qs = q.toString()
   const data = await apiGet<TxResponse>(`/api/portal/transactions${qs ? `?${qs}` : ''}`, {
     signal,

@@ -22,6 +22,8 @@ const txQuerySchema = z.object({
   sort: z.enum(['recent', 'oldest']).default('recent'),
   offset: z.coerce.number().int().min(0).max(1_000_000).default(0),
   limit: z.coerce.number().int().min(1).max(50).default(15),
+  /** Group-car ledger: optional Accid when WebStatus group allow */
+  accid: z.coerce.number().int().positive().max(2_147_483_647).optional(),
 })
 
 function resolveTxDateRange({ date, dateFrom, dateTo }) {
@@ -218,13 +220,14 @@ function parseGroupAllowed(gaValue, ownGroupId) {
 
 async function loadCustomerGroupAccess(pool, accid) {
   const result = await pool.request().input('accid', sql.Int, accid).query(`
-    SELECT A.GroupId, A.GA
+    SELECT A.GroupId, A.WebStatus
     FROM dbo.AccReg A
     WHERE A.Accid = @accid
   `)
   const row = result.recordset[0]
   if (!row) return { allowed: false, groupIds: [] }
-  return parseGroupAllowed(row.GA, row.GroupId)
+  // WebStatus yes / GA (or numeric group ids) → group allow; empty → denied
+  return parseGroupAllowed(row.WebStatus, row.GroupId)
 }
 
 const DETAIL_SQL = `
@@ -240,7 +243,7 @@ const DETAIL_SQL = `
     A.Dated,
     A.Status,
     A.GroupId,
-    A.GA,
+    A.WebStatus,
     G.GroupName,
     ISNULL((
       SELECT SUM(ISNULL(L2.Debit, 0)) - SUM(ISNULL(L2.Credit, 0))
@@ -258,15 +261,14 @@ const DETAIL_SQL = `
   WHERE A.Accid = @accid
   GROUP BY
     A.Accid, A.AccNo, A.AccName, A.Ph, A.Email, A.NIC, A.Address,
-    A.Description, A.Dated, A.Status, A.GroupId, A.GA, G.GroupName
+    A.Description, A.Dated, A.Status, A.GroupId, A.WebStatus, G.GroupName
 `
 
 async function loadFuelSummary(pool, accid, dateFrom, dateTo) {
-  const bizId = await resolveBizId(pool)
+  // Filter by Accid only — client Leger uses CompId (not BizId)
   const result = await pool
     .request()
     .input('accid', sql.Int, accid)
-    .input('bizId', sql.Int, bizId)
     .input('hasFrom', sql.Bit, dateFrom ? 1 : 0)
     .input('hasTo', sql.Bit, dateTo ? 1 : 0)
     .input('dateFrom', sql.Date, dateFrom || '1900-01-01')
@@ -280,7 +282,6 @@ async function loadFuelSummary(pool, accid, dateFrom, dateTo) {
         SUM(ISNULL(Other, 0)) AS Others
       FROM dbo.Leger
       WHERE Accid = @accid
-        AND BizId = @bizId
         AND (@hasFrom = 0 OR CAST(Dated AS date) >= @dateFrom)
         AND (@hasTo = 0 OR CAST(Dated AS date) <= @dateTo)
     `)
@@ -313,7 +314,7 @@ portalRouter.get('/me', async (req, res) => {
     }
 
     const fuelSummary = await loadFuelSummary(pool, accid, dateFrom, dateTo)
-    const groupAccess = parseGroupAllowed(row.GA, row.GroupId)
+    const groupAccess = parseGroupAllowed(row.WebStatus, row.GroupId)
 
     return res.json({
       ok: true,
@@ -568,19 +569,36 @@ portalRouter.get('/groups/:groupId', async (req, res) => {
 })
 
 portalRouter.get('/transactions', async (req, res) => {
-  const accid = requirePortalAccid(req, res)
-  if (accid == null) return
+  const selfAccid = requirePortalAccid(req, res)
+  if (selfAccid == null) return
 
   const queryParsed = txQuerySchema.safeParse(req.query)
   if (!queryParsed.success) {
     return res.status(400).json({ ok: false, message: 'Invalid request' })
   }
 
-  const { kind, sort, offset, limit } = queryParsed.data
+  const { kind, sort, offset, limit, accid: requestedAccid } = queryParsed.data
   const { from: dateFrom, to: dateTo } = resolveTxDateRange(queryParsed.data)
 
   try {
     const pool = await getPool()
+
+    let accid = selfAccid
+    if (requestedAccid != null && requestedAccid !== selfAccid) {
+      const access = await loadCustomerGroupAccess(pool, selfAccid)
+      if (!access.allowed || access.groupIds.length === 0) {
+        return res.status(403).json({ ok: false, message: 'Group access not allowed' })
+      }
+      const target = await pool
+        .request()
+        .input('accid', sql.Int, requestedAccid)
+        .query(`SELECT TOP (1) Accid, GroupId FROM dbo.AccReg WHERE Accid = @accid`)
+      const targetRow = target.recordset[0]
+      if (!targetRow || !access.groupIds.includes(Number(targetRow.GroupId))) {
+        return res.status(403).json({ ok: false, message: 'Account not in allowed group' })
+      }
+      accid = requestedAccid
+    }
 
     const metaResult = await pool
       .request()
