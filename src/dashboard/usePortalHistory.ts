@@ -32,6 +32,7 @@ export function usePortalHistory(
   dateFrom: string,
   dateTo: string,
   sort: HistorySort,
+  accid?: number,
 ): PortalHistoryState {
   const [fetched, setFetched] = useState<PortalTransaction[]>([])
   const [total, setTotal] = useState(0)
@@ -70,6 +71,7 @@ export function usePortalHistory(
         sort,
         offset: 0,
         limit: PAGE,
+        accid,
       },
       ac.signal,
     )
@@ -100,7 +102,7 @@ export function usePortalHistory(
       ac.abort()
       inflight.current = false
     }
-  }, [kind, dateFrom, dateTo, sort])
+  }, [kind, dateFrom, dateTo, sort, accid])
 
   const loadFromServer = useCallback(
     async (limit: number) => {
@@ -117,6 +119,7 @@ export function usePortalHistory(
           sort,
           offset,
           limit: Math.min(limit, 50),
+          accid,
         })
         setTotal(data.total)
         setOpeningBalance(data.openingBalance)
@@ -134,7 +137,7 @@ export function usePortalHistory(
         setLoadingMore(false)
       }
     },
-    [kind, dateFrom, dateTo, sort],
+    [kind, dateFrom, dateTo, sort, accid],
   )
 
   const revealMore = useCallback(() => {

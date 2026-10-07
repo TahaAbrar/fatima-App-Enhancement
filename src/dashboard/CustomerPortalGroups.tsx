@@ -208,6 +208,9 @@ function CustomerPortalGroupDetail({
         showTotals
         loading={loading}
         emptyMessage={emptyMessage}
+        onRowClick={(row) =>
+          navigate(`/customer/transactions?accid=${row.accid}&groupId=${groupId}`)
+        }
       />
     </div>
   )

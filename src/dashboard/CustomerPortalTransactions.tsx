@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { HistorySort } from './customers'
 import { BackChevron } from './customerDetails/ui'
 import { applyDateRange, DateRangeFilter } from './filters'
@@ -13,10 +13,19 @@ type Props = {
 
 export function CustomerPortalTransactions({ homePath }: Props) {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const viewAccidRaw = Number(searchParams.get('accid') || '')
+  const viewAccid =
+    Number.isInteger(viewAccidRaw) && viewAccidRaw > 0 ? viewAccidRaw : undefined
+  const backGroupIdRaw = Number(searchParams.get('groupId') || '')
+  const backPath =
+    Number.isInteger(backGroupIdRaw) && backGroupIdRaw > 0
+      ? `/customer/groups/${backGroupIdRaw}`
+      : homePath
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [sort] = useState<HistorySort>('oldest')
-  const history = usePortalHistory('all', dateFrom, dateTo, sort)
+  const history = usePortalHistory('all', dateFrom, dateTo, sort, viewAccid)
 
   const afterFiveMobileRef = useRef<HTMLLIElement | null>(null)
   const afterFiveDesktopRef = useRef<HTMLTableRowElement | null>(null)
@@ -54,7 +63,7 @@ export function CustomerPortalTransactions({ homePath }: Props) {
       <div className="flex items-center gap-2 lg:hidden">
         <button
           type="button"
-          onClick={() => navigate(homePath)}
+          onClick={() => navigate(backPath)}
           className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent px-0 py-1 text-[0.9rem] font-bold text-[#c99700]"
         >
           <BackChevron />
@@ -70,10 +79,10 @@ export function CustomerPortalTransactions({ homePath }: Props) {
           <p className="m-0 text-[0.82rem] font-medium text-muted">
             <button
               type="button"
-              onClick={() => navigate(homePath)}
+              onClick={() => navigate(backPath)}
               className="cursor-pointer border-0 bg-transparent p-0 font-medium text-muted hover:text-ink"
             >
-              My Account
+              {backPath === homePath ? 'My Account' : 'Group'}
             </button>
             <span className="mx-1.5 text-[#c4c9d2]">›</span>
             <span className="font-semibold text-ink">Account Ledger</span>
@@ -84,11 +93,11 @@ export function CustomerPortalTransactions({ homePath }: Props) {
         </div>
         <button
           type="button"
-          onClick={() => navigate(homePath)}
+          onClick={() => navigate(backPath)}
           className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-[0.84rem] font-bold text-ink hover:bg-[#f7f8fa]"
         >
           <BackChevron />
-          Back to My Account
+          {backPath === homePath ? 'Back to My Account' : 'Back to Group'}
         </button>
       </div>
 

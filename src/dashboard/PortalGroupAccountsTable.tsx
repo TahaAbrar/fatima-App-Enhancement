@@ -10,6 +10,7 @@ type Props = {
   showTotals?: boolean
   loading?: boolean
   emptyMessage?: string
+  onRowClick?: (row: PortalGroupAccount) => void
 }
 
 function Money({
@@ -40,6 +41,7 @@ export function PortalGroupAccountsTable({
   showTotals = true,
   loading = false,
   emptyMessage = 'No accounts found in this group.',
+  onRowClick,
 }: Props) {
   return (
     <div className={`${panel} overflow-hidden rounded-2xl`}>
@@ -48,7 +50,22 @@ export function PortalGroupAccountsTable({
         {rows.map((row) => (
           <li
             key={row.accid}
-            className="flex flex-col gap-1.5 border-b border-[#ECEEF2] px-4 py-3"
+            role={onRowClick ? 'button' : undefined}
+            tabIndex={onRowClick ? 0 : undefined}
+            onClick={onRowClick ? () => onRowClick(row) : undefined}
+            onKeyDown={
+              onRowClick
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onRowClick(row)
+                    }
+                  }
+                : undefined
+            }
+            className={`flex flex-col gap-1.5 border-b border-[#ECEEF2] px-4 py-3${
+              onRowClick ? ' cursor-pointer hover:bg-[#fcfcfd]' : ''
+            }`}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -112,7 +129,11 @@ export function PortalGroupAccountsTable({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.accid} className="bg-white">
+              <tr
+                key={row.accid}
+                className={`bg-white${onRowClick ? ' cursor-pointer hover:bg-[#fcfcfd]' : ''}`}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+              >
                 <td className={`${td} whitespace-nowrap text-center`}>{row.date || '—'}</td>
                 <td className={`${td} font-semibold`}>{row.name}</td>
                 <td className={`${td} text-center`}>{row.phone || '—'}</td>
