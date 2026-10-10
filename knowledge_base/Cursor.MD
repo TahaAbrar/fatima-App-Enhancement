@@ -260,6 +260,16 @@ Verified: login → `/customers` → open **Aarzi Dasti Khata** → details/info
 - `CustomersPage.tsx`: kept upstream Search Account `z-0` (logout menu above filters), `MobileSearchField`, and filter grid `z-20`. Dropped stash `z-10` without the mobile search field.
 - This `Cursor.MD` had **no** conflict markers.
 
+## UNIT portal (2026-10-10)
+
+Ported from Sukka-petrol into FatimaFS. View-only PTS pump summary.
+
+- Roles: `Unit` → `/unit/dashboard` (nav = UNIT only); `Administrator` → sidebar **UNIT** → `/unit`; Accountant/Customer/User → no tab, API 403
+- API: `GET /api/unit/dashboard?duty_no=` — `requireRoles('Unit','Administrator')` + read key
+- SQL: today = `Timed` day window; duty = `DNo`; Opening = Max(Reading1)−Sum(Qty); Closing = Max(Reading1)
+- FE: `UnitDashboardPage.tsx`, `unitDashboard.ts`, `unitConfig()`, shell `kind === 'unit'`
+- Company API allows Unit for shell brand. No PTS writes. No push for Unit portal.
+
 ## Agent notes
 - Multiple agents: read this file before work; update after meaningful changes.
 - 2026-08-27: Public login 403 was CORS + proxy port. Vite now proxies to **4001**. Dev CORS allows `--host` public Origin. Both tmux sessions restarted.

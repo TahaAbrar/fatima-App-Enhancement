@@ -7,8 +7,9 @@ export type NavId =
   | 'transactions'
   | 'reports'
   | 'chartOfAccounts'
+  | 'unit'
 
-export type PortalRole = 'Administrator' | 'Accountant' | 'User' | 'Customer'
+export type PortalRole = 'Administrator' | 'Accountant' | 'User' | 'Customer' | 'Unit'
 
 export type NavItem = {
   id: NavId
@@ -31,5 +32,5 @@ export type DashboardConfig = {
   bottomNav: BottomNavItem[]
   homePath: string
   txPath: string
-  kind?: 'staff' | 'customer'
+  kind?: 'staff' | 'customer' | 'unit'
 }
