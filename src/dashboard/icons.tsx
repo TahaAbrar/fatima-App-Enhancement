@@ -83,6 +83,15 @@ export function NavIcon({ name }: { name: string }) {
           <path d="M10 9h7M10 13h7M10 17h4" />
         </svg>
       )
+    case 'pump':
+      return (
+        <svg {...strokeProps}>
+          <path d="M4 20V7.5A2.5 2.5 0 0 1 6.5 5H12a2.5 2.5 0 0 1 2.5 2.5V20" />
+          <path d="M4 20h10.5" />
+          <path d="M7 9h5M7 12.5h5" />
+          <path d="M14.5 10h1.8a2 2 0 0 1 2 2v5.5a1.5 1.5 0 0 0 3 0V9.5L19 7.5" />
+        </svg>
+      )
     case 'gear':
       return (
         <svg {...strokeProps}>

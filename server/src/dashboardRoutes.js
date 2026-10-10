@@ -193,7 +193,7 @@ dashboardRouter.get('/banks', async (_req, res) => {
         GROUP BY L.Accid
       ) B ON B.Accid = A.Accid
       WHERE G.GroupName = ${BANKS_GROUP}
-      ORDER BY A.AccName
+      ORDER BY A.SrNo, A.AccName
     `)
 
     const banks = result.recordset.map((row) => ({

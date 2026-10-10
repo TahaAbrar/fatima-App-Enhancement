@@ -325,9 +325,9 @@ coaRouter.get('/groups/:groupId/accounts', async (req, res) => {
           AND (@hasTo = 0 OR CAST(L.Dated AS date) <= @dateTo)
         WHERE A.GroupId = @groupId
         GROUP BY
-          A.Accid, A.AccNo, A.AccName, A.Ph, A.Urdo, A.Status,
+          A.Accid, A.AccNo, A.AccName, A.Ph, A.Urdo, A.Status, A.SrNo,
           G.GroupName, G.ChartId, C.Type
-        ORDER BY A.AccName
+        ORDER BY A.SrNo, A.AccName
       `)
     return res.json({
       ok: true,

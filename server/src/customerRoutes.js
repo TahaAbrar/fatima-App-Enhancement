@@ -216,9 +216,7 @@ function mapCustomerRow(row) {
 function accountFilters(request, { q, date, dateFrom, dateTo, status, type }) {
   const where = ['1 = 1']
   if (q) {
-    where.push(
-      '(A.AccNo LIKE @q OR A.AccName LIKE @q OR A.Ph LIKE @q OR A.Email LIKE @q)',
-    )
+    where.push('A.AccName LIKE @q')
     request.input('q', sql.NVarChar(120), likeContains(q))
   }
   const range = resolveTxDateRange({ date, dateFrom, dateTo })

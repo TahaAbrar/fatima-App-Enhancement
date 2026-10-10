@@ -103,6 +103,7 @@ export async function loginHandler(req, res) {
     }
 
     const role = normalizeRole(staffUser.Type)
+    // UserReg Type=User is blocked; Type=Unit is allowed (UNIT view-only portal).
     if (isDisabledStatus(staffUser.Status) || role === 'User') {
       return res.status(403).json({
         ok: false,

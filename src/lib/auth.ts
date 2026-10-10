@@ -3,7 +3,7 @@ const AUTH_KEY = 'fuelledger_auth'
 export type AuthUser = {
   id: string | number
   username: string
-  role: 'Administrator' | 'Accountant' | 'User' | 'Customer' | string
+  role: 'Administrator' | 'Accountant' | 'User' | 'Customer' | 'Unit' | string
   accid?: number
   name?: string
 }
@@ -76,6 +76,7 @@ export function homePathForRole(role: string): string {
   if (r === 'administrator' || r === 'admin') return '/dashboard'
   if (r === 'accountant') return '/accountant/dashboard'
   if (r === 'customer') return '/customer/dashboard'
+  if (r === 'unit') return '/unit/dashboard'
   return '/login'
 }
 

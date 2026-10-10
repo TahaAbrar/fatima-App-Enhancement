@@ -18,6 +18,7 @@ import { ChartOfAccountsPage } from './ChartOfAccountsPage'
 import { CustomerPortalHome } from './CustomerPortalHome'
 import { CustomerPortalGroups } from './CustomerPortalGroups'
 import { CustomerPortalTransactions } from './CustomerPortalTransactions'
+import { UnitDashboardPage } from './UnitDashboardPage'
 import {
   FALLBACK_COMPANY,
   loadCompany,
@@ -54,6 +55,7 @@ export function DashboardShell({ config }: Props) {
   const stockNav = nav.find((item) => item.id === 'reports')
   const stockPath = stockNav?.path ?? '/reports'
   const isCustomerPortal = kind === 'customer'
+  const isUnitPortal = kind === 'unit'
   const customerGroupsPath = '/customer/groups'
   const isCustomerGroups =
     isCustomerPortal && location.pathname.startsWith(`${customerGroupsPath}`)
@@ -80,7 +82,7 @@ export function DashboardShell({ config }: Props) {
         )
       }
       return item.path === location.pathname
-    })?.id ?? 'dashboard'
+    })?.id ?? (isUnitPortal ? 'unit' : 'dashboard')
   const activeLabel = nav.find((n) => n.id === active)?.label || 'Dashboard'
   const activePath = nav.find((n) => n.id === active)?.path || homePath
   const displayName =
@@ -89,7 +91,11 @@ export function DashboardShell({ config }: Props) {
   const showSection = active !== 'dashboard'
   const isCustomers = active === 'customers'
   const hideHeaderSearch =
-    active === 'transactions' || active === 'credit' || active === 'debit'
+    active === 'transactions' ||
+    active === 'credit' ||
+    active === 'debit' ||
+    active === 'unit' ||
+    isUnitPortal
   const shortAddress = truncateAddress(company.address)
 
   useEffect(() => {
@@ -111,11 +117,11 @@ export function DashboardShell({ config }: Props) {
   }, [])
 
   useEffect(() => {
-    if (isCustomerPortal) return
+    if (isCustomerPortal || isUnitPortal) return
     void enablePush().catch(() => {
       /* permission denied or unsupported */
     })
-  }, [isCustomerPortal])
+  }, [isCustomerPortal, isUnitPortal])
 
   useEffect(() => {
     if (!mobileMenuOpen && !companyCardOpen) return
@@ -432,7 +438,9 @@ export function DashboardShell({ config }: Props) {
         </header>
 
         <div className="flex flex-col gap-3.5 px-4 pb-4 pt-1 lg:gap-[1.15rem] lg:px-6 lg:pb-8 lg:pt-2">
-          {isCustomerPortal && isCustomerGroups ? (
+          {isUnitPortal || active === 'unit' ? (
+            <UnitDashboardPage />
+          ) : isCustomerPortal && isCustomerGroups ? (
             <CustomerPortalGroups homePath={homePath} groupsPath={customerGroupsPath} />
           ) : isCustomerPortal && active === 'dashboard' ? (
             <CustomerPortalHome txPath={txPath} groupsPath={customerGroupsPath} />

@@ -62,6 +62,7 @@ export function normalizeRole(type) {
   if (t === 'administrator' || t === 'admin') return 'Administrator'
   if (t === 'accountant') return 'Accountant'
   if (t === 'customer') return 'Customer'
+  if (t === 'unit') return 'Unit'
   if (t === 'user') return 'User'
   return 'User'
 }
@@ -74,6 +75,8 @@ export function dashboardPathForRole(role) {
       return '/accountant/dashboard'
     case 'Customer':
       return '/customer/dashboard'
+    case 'Unit':
+      return '/unit/dashboard'
     case 'User':
       return '/user/dashboard'
     default:

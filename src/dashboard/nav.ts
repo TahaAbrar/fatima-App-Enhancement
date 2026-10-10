@@ -9,6 +9,7 @@ const NAV_BASE: NavItem[] = [
   { id: 'debit', label: 'Debit', icon: 'debit', path: '/debit' },
   { id: 'transactions', label: 'Transactions', icon: 'swap', path: '/transactions' },
   { id: 'reports', label: 'Stock', icon: 'doc', path: '/reports' },
+  { id: 'unit', label: 'UNIT', icon: 'pump', path: '/unit' },
 ]
 
 const CUSTOMER_NAV: NavItem[] = [
@@ -134,5 +135,21 @@ export function customerConfig() {
     homePath: '/customer/dashboard',
     txPath: '/customer/transactions',
     kind: 'customer' as const,
+  }
+}
+
+/** UserReg Type=Unit — single UNIT page only (no duplicate Home/UNIT links). */
+export function unitConfig() {
+  const nav: NavItem[] = [
+    { id: 'unit', label: 'UNIT', icon: 'pump', path: '/unit/dashboard' },
+  ]
+  return {
+    portalTitle: 'UNIT Portal',
+    roleLabel: 'UNIT Admin',
+    nav,
+    bottomNav: [{ id: 'unit', label: 'UNIT', path: '/unit/dashboard', icon: 'doc' }],
+    homePath: '/unit/dashboard',
+    txPath: '/unit/dashboard',
+    kind: 'unit' as const,
   }
 }

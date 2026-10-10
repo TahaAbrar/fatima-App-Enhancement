@@ -16,6 +16,7 @@ import { reportsRouter } from './reportsRoutes.js'
 import { portalRouter } from './portalRoutes.js'
 import { cashbookRouter } from './cashbookRoutes.js'
 import { pushRouter } from './pushRoutes.js'
+import { unitRouter } from './unitRoutes.js'
 import { startPushWatcher } from './push.js'
 
 const app = express()
@@ -135,8 +136,17 @@ app.use(
   apiReadLimiter,
   requireReadKey,
   requireAuth,
-  requireRoles('Administrator', 'Accountant', 'Customer'),
+  requireRoles('Administrator', 'Accountant', 'Customer', 'Unit'),
   companyRouter,
+)
+
+app.use(
+  '/api/unit',
+  apiReadLimiter,
+  requireReadKey,
+  requireAuth,
+  requireRoles('Unit', 'Administrator'),
+  unitRouter,
 )
 
 app.use(
